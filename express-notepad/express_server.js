@@ -1,3 +1,14 @@
+/* A simple notepad app build on the Express framework for NodeJS.  You can
+ * write, save, and retrieve notes.
+ * 
+ * Requirments:
+ *   npm install express
+ *   npm install ejs
+ *
+ * To run:
+ *   node express_server.js
+ */
+
 var express = require('express');
 var app = express.createServer();
 
