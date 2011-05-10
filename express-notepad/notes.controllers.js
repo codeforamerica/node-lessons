@@ -1,11 +1,13 @@
-/* A simple CRUD controller for notes (which only implements R and U).
+/* A simple CRUD controller for notes (which only implements C, R, and U).
  */
 
 NotesController = function(db) {
     
     var notes = {};
     var count = 1;
-
+    
+    // TODO: A lot of work done here in the constructor.  This 
+    // should be in a factory instead maybe.
     db.all({ 'include_docs':'true' }, function(err, data) {
         if(err) {
             console.log(err);
@@ -17,7 +19,21 @@ NotesController = function(db) {
         }
         console.log(notes);
     });
-
+    
+    /* List all of the known notes.
+     *
+     * @return The context for the set of notes.
+     */
+    this.index = function(req, res) {
+        return {
+            notes: notes
+        };
+    };
+    
+    /* Retrieve a given note. Gives an empty note if no id is provided.
+     *
+     * @return The context for the individual note.
+     */
     this.retrieve = function(req, res) {
         var note_id = req.query.id || '';
         
@@ -29,11 +45,15 @@ NotesController = function(db) {
         
         return {
             note: note, 
-            notes: notes, 
             note_id: note_id
         };
     };
     
+    /* Update a given note. Creates a note with an auto-incremented id if no id
+     * is provided.
+     *
+     * @return The context for the created note.
+     */
     this.update = function(req, res) {
         var note_id = req.body.note_id || count++;
         var note = {
@@ -54,7 +74,8 @@ NotesController = function(db) {
         });
         
         return {
-            note_id: note_id
+            note_id: note_id,
+            note: note
         };
     };
 };
