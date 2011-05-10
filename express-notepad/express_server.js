@@ -1,3 +1,13 @@
+/* A simple notepad app build on the Express framework for NodeJS.  You can
+ * write, save, and retrieve notes.
+ * 
+ * Requirments:
+ *   npm install express
+ *   npm install ejs
+ *
+ * To run:
+ *   node express_server.js
+ */
 var cradle = require('cradle');
 var db = new(cradle.Connection)('mertonium.iriscouch.com').database('notez');
 var express = require('express');
