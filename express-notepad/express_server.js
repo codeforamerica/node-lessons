@@ -23,27 +23,15 @@ var count = 1;
 var fbid;
 var facebook;
 
+var controllers = require('./notes.controllers.js');
+var controller = new controllers.NotesController();
+
 // Express app setup
 app.use(express.bodyParser());
 app.set('view options', {
     layout: false
 });
 
-// Load the db data
-var dataLoader = function() {
-    var db = conn.database('notez');
-    db.all({ 'include_docs':'true' }, function(err, data) {
-        if(err) {
-            console.log(err);
-        } else {
-            console.log(data);
-            for(i=0; i < data.length; i++) {
-                notes[data[i].id] = data[i].doc;
-            }
-        }
-        console.log(notes);
-    });
-};
 
 // Setup the hompage to be the login screen
 /*
@@ -78,8 +66,9 @@ app.get('/', function(req, res) {
                 console.log(arguments);
                 console.log('in loggedin');
                 console.log('made it');
-                
+                controller.init(db, function() { res.redirect('notes?fbid='+fbid); });
                 // Load the user's notes
+                /*
                 db.all({ 'include_docs':'true' }, function(err, data) {
                     if(err) {
                         console.log(err);
@@ -89,10 +78,11 @@ app.get('/', function(req, res) {
                             notes[data[i].id] = data[i].doc;
                         }
                     }
-
+                    
                     // Direct to the notes page
                     res.redirect('notes?fbid='+fbid);
                 });
+                */
             });
         });
     } else {
@@ -102,51 +92,39 @@ app.get('/', function(req, res) {
     }
 });
 
-
-/*
-db.exists(function(req, res) { 
-    if(!res) { 
-        db.create(function(){}); 
-    }
-});
-*/
-
-//console.log(fakeNotes);
-
 app.get('/notes', function(req, res) {
-    var note_id = req.query.id || '';
-    var fbid = req.query.fbid || '';
-    console.log('fbid = '+fbid);
-    if (note_id) {
-        note = notes[note_id];
-    } else {
-        note = {title: '', content: ''};
-    }
-    
-    res.render('notepad.ejs', {note: note, notes: notes, note_id: note_id});
+    retr_context = controller.retrieve(req, res);
+    index_context = controller.index(req, res);
+    res.render('notepad.ejs', combine(retr_context, index_context));
 });
 
 app.post('/save_note', function(req, res) {
-    note_id = req.body.note_id || count++;
-    var note = {
-        title: req.body.note_title,
-        content: req.body.note_content
-    };
-    notes[note_id] = note;
-    
-    db.save(note_id.toString(), note, function (err, res) {
-        if (err) {
-            // Handle error
-            console.log(err);
-            console.log(res);
-        } else {
-            // Handle success
-            console.log(res);
-        }
-    });
-    
-    res.redirect('notes?id=' + note_id);
+    context = controller.update(req, res);
+    res.redirect('notes?id=' + context.note_id);
 });
 
 app.listen(3000);
 console.log('Server running at http://localhost:3000/');
+
+
+/* This is a simple combine method.  I don't know what pitfalls there are here
+ * yet, I just want something that works.
+ */
+combine = function(first, other) {
+    var combined_context = {},
+        contexts = [first, other],
+        context_index,
+        curr_context,
+        key;
+    
+    for (context_index in contexts) {
+        curr_context = contexts[context_index];
+        console.log(curr_context);
+        for (key in curr_context) {
+            combined_context[key] = curr_context[key];
+        }
+    }
+    
+    console.log(combined_context);
+    return combined_context;
+}
