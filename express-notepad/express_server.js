@@ -19,7 +19,7 @@ var count = 1;
 app.use(express.bodyParser());
 app.set('view options', {
     layout: false
-})
+});
 
 db.all({ 'include_docs':'true' }, function(err, data) {
     if(err) {
