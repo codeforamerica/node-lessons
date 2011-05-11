@@ -11,19 +11,19 @@ NotesController = function() {
     // TODO: A lot of work done here in the constructor.  This 
     // should be in a factory instead maybe.
     this.init = function(initdb, callback) {
+        //console.log('in the init');
         db = initdb;
         db.all({ 'include_docs':'true' }, function(err, data) {
             if(err) {
                 console.log(err);
             } else {
-                console.log(data);
+                //console.log(data);
                 for(i=0; i < data.length; i++) {
                     notes[data[i].id] = data[i].doc;
                 }
             }
             callback();
         });
-        
     }
     
     /* List all of the known notes.
@@ -60,29 +60,38 @@ NotesController = function() {
      *
      * @return The context for the created note.
      */
-    this.update = function(req, res) {
-        var note_id = req.body.note_id || count++;
+    this.update = function(req, res, callback) {
+        var note_id = req.body.note_id || false;
+        
+        
         var note = {
             title: req.body.note_title,
             content: req.body.note_content
+            
         };
-        notes[note_id] = note;
         
-        db.save(note_id.toString(), note, function (err, res) {
+        db.save(note_id, note, function (err, res) {
             if (err) {
                 // Handle error
                 console.log(err);
                 console.log(res);
             } else {
                 // Handle success
-                console.log(res);
+                console.log('res --> ');
+                console.log(res.id);
+                note_id = res.id;
+                notes[note_id] = note;
             }
+            var retObj = {
+                note_id: note_id,
+                note: note
+            };
+            
+            callback(retObj);
+
         });
         
-        return {
-            note_id: note_id,
-            note: note
-        };
+        
     };
 };
 

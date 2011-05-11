@@ -10,7 +10,8 @@
  *   node express_server.js
  */
 var cradle = require('cradle');
-var conn = new(cradle.Connection)('mertonium.iriscouch.com');
+var conn = new(cradle.Connection)('127.0.0.1','5984', {
+    auth: { username: 'admin', password: 'admin' }});
 var express = require('express');
 var fbsdk = require('facebook-sdk');
 var connect = require('connect');
@@ -18,7 +19,7 @@ var Step = require('step');
 
 var app = express.createServer();
 var db;
-var notes = {};
+//var notes = {};
 var count = 1;
 var fbid;
 var facebook;
@@ -59,30 +60,20 @@ app.get('/', function(req, res) {
             fbid = me.id;
             console.log('fbid #1 = '+fbid);
             db = conn.database('notez-'+fbid);
-            
             console.log('look at me');
             console.log('in setupDb');
             db.create(function(err) {
-                console.log(arguments);
                 console.log('in loggedin');
+                console.log(err);
+                
                 console.log('made it');
-                controller.init(db, function() { res.redirect('notes?fbid='+fbid); });
+                
                 // Load the user's notes
-                /*
-                db.all({ 'include_docs':'true' }, function(err, data) {
-                    if(err) {
-                        console.log(err);
-                    } else {
-                        console.log(data);
-                        for(i=0; i < data.length; i++) {
-                            notes[data[i].id] = data[i].doc;
-                        }
-                    }
-                    
-                    // Direct to the notes page
-                    res.redirect('notes?fbid='+fbid);
+                controller.init(db, function() { 
+                    console.log('time to redirect');
+                    res.redirect('notes?fbid='+fbid); 
                 });
-                */
+                
             });
         });
     } else {
@@ -99,8 +90,9 @@ app.get('/notes', function(req, res) {
 });
 
 app.post('/save_note', function(req, res) {
-    context = controller.update(req, res);
-    res.redirect('notes?id=' + context.note_id);
+    controller.update(req, res, function(context) { 
+        res.redirect('notes?id=' + context.note_id); 
+    });
 });
 
 app.listen(3000);
@@ -119,12 +111,12 @@ combine = function(first, other) {
     
     for (context_index in contexts) {
         curr_context = contexts[context_index];
-        console.log(curr_context);
+        //console.log(curr_context);
         for (key in curr_context) {
             combined_context[key] = curr_context[key];
         }
     }
     
-    console.log(combined_context);
+    //console.log(combined_context);
     return combined_context;
 }
