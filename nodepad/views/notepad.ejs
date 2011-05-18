@@ -1,0 +1,29 @@
+<html>
+    <head>
+    </head>
+    
+    <body>
+        <form action="save_note" method="POST">
+            <input 
+                type="hidden" 
+                name="note_id" 
+                value="<%= note_id %>" />
+            <input 
+                name="note_title" 
+                placeholder="Note Title..." 
+                value="<%= note.title %>" /><br>
+            <textarea name="note_content"><%= note.content %></textarea><br>
+            <button type="submit">Save</button>
+            <a href="notes">New note</a>
+        </form>
+        <br />
+        <form action="notes" method="GET">
+            <select name="id">
+                <% for (i in notes) { %>
+                <option value="<%= i %>"><%= notes[i].title %></option>
+                <% } %>
+            </select><br>
+            <button type="submit">Open</button>
+        </form>
+    </body>
+</html>
